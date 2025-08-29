@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:fun_finder/helpers/helpers.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -25,6 +26,11 @@ class _HomeViewState extends State<HomeView> {
   late ConfettiController _confettiController;
   final AudioPlayer player = AudioPlayer();
 
+  final GlobalKey _startGameBtnKey = GlobalKey();
+  final GlobalKey _searchForKey = GlobalKey();
+  final GlobalKey _wrongAttemptsKey = GlobalKey();
+  final GlobalKey _gridViewKey = GlobalKey();
+
   _HomeViewState()
     : images = List.generate(
         9,
@@ -37,6 +43,16 @@ class _HomeViewState extends State<HomeView> {
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 2),
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ShowCaseWidget.of(context).startShowCase([
+        _startGameBtnKey,
+        _searchForKey,
+        _wrongAttemptsKey,
+        _gridViewKey,
+      ]);
+    });
+
     super.initState();
   }
 
@@ -108,44 +124,70 @@ class _HomeViewState extends State<HomeView> {
                     'Search for',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  Image.asset(
-                    'assets/images/test_colorful_number/${randomNumber ?? 0}.png',
-                    // 'assets/images/colorful_numbers/${1}.png',
-                    width: 100,
-                    height: 100,
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Wrong Attempts: $wrongCount',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  SizedBox(height: 10),
-                  GridView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: 1,
+                  Showcase(
+                    key: _searchForKey,
+                    description: 'You need to find this number',
+                    child: Image.asset(
+                      'assets/images/test_colorful_number/${randomNumber ?? 0}.png',
+                      // 'assets/images/colorful_numbers/${1}.png',
+                      width: 100,
+                      height: 100,
                     ),
-                    itemCount: images.length,
-                    itemBuilder: (context, index) {
-                      bool isCorrectTile =
-                          showCorrectAnswer &&
-                          shuffledNumbers[index] == randomNumber;
-                      return GestureDetector(
-                        onTap: () => checkAnswer(index),
-                        child: Container(
-                          margin: EdgeInsets.all(8.0),
-                          child: isCorrectTile
-                              ? Image.asset(
-                                  'assets/images/test_colorful_number/$randomNumber.png',
-                                  width: 50,
-                                  height: 50,
-                                )
-                              : images[index],
-                        ),
-                      );
-                    },
+                  ),
+                  SizedBox(height: 10),
+                  Showcase(
+                    key: _wrongAttemptsKey,
+                    description: 'Shows your wrong attempts & You have only 3 attempts',
+                    child: Text(
+                      'Wrong Attempts: $wrongCount',
+                      style: TextStyle(fontSize: 24),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Showcase(
+                    key: _gridViewKey,
+                    description: 'Tap on the boxes to find the correct number',
+                    child: GridView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: images.length,
+                      itemBuilder: (context, index) {
+                        bool isCorrectTile =
+                            showCorrectAnswer &&
+                            shuffledNumbers[index] == randomNumber;
+                        return GestureDetector(
+                          onTap: () => checkAnswer(index),
+                          child: Container(
+                            margin: EdgeInsets.all(8.0),
+                            child: isCorrectTile
+                                ?  Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Helpers.primaryColor, width: 4),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Helpers.primaryColor.withOpacity(0.6),
+                                    blurRadius: 15,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              padding: EdgeInsets.all(8),
+                              child: Image.asset(
+                                'assets/images/test_colorful_number/$randomNumber.png',
+                                width: 50,
+                                height: 50,
+                              ),
+                            )
+                                : images[index],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
@@ -157,9 +199,13 @@ class _HomeViewState extends State<HomeView> {
                       ),
                       backgroundColor: Helpers.primaryColor,
                     ),
-                    child: Text(
-                      'Start Game',
-                      style: TextStyle(color: Helpers.SecondaryColor),
+                    child: Showcase(
+                      key: _startGameBtnKey,
+                      description: 'Click to start the game',
+                      child: Text(
+                        'Start Game',
+                        style: TextStyle(color: Helpers.SecondaryColor),
+                      ),
                     ),
                   ),
                 ],
