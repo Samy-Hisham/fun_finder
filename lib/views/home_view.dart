@@ -116,6 +116,25 @@ class _HomeViewState extends State<HomeView> {
       child: Scaffold(
         body: Stack(
           children: [
+            Positioned(
+              top: 16,
+              right: 16,
+              child: IconButton(
+                icon: Icon(
+                  Icons.info,
+                  color: Helpers.primaryColor,
+                  size: 30,
+                ),
+                onPressed: () {
+                  ShowCaseWidget.of(context).startShowCase([
+                    _startGameBtnKey,
+                    _searchForKey,
+                    _wrongAttemptsKey,
+                    _gridViewKey,
+                  ]);
+                },
+              ),
+            ),
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
